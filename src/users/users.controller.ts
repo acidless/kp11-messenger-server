@@ -4,16 +4,28 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Data } from '../../decorators/data.decorator';
-import { LoginUserDTO, RegisterUserDTO } from './UsersDTOS';
+import { CreateProfileDTO, LoginUserDTO, RegisterUserDTO } from './UsersDTOS';
 import { UsersService } from './users.service';
 import JSendSerializer from 'r-jsend';
 import { include } from '../../utils/object';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '../jwt/jwt.service';
+import { AuthGuard } from '../guards/auth.guard';
+import { RequestContext } from '../../decorators/request-context.decorator';
 
-const fill = ['login', 'password', 'email', 'passwordConfirm'];
+const loginData = ['login', 'password', 'email', 'passwordConfirm'];
+const profileData = ['name', 'surname', 'phoneNumber', 'group'];
+const includeData = [
+  'login',
+  'email',
+  'name',
+  'surname',
+  'phoneNumber',
+  'group',
+];
 
 @Controller('users')
 export class UsersController {
@@ -25,7 +37,7 @@ export class UsersController {
 
   @Post('/register')
   @HttpCode(HttpStatus.CREATED)
-  public async register(@Data(fill) data: RegisterUserDTO) {
+  public async register(@Data(loginData) data: RegisterUserDTO) {
     if (data.password == data.passwordConfirm) {
       const createdUser = await this.usersService.create(data);
 
@@ -35,7 +47,10 @@ export class UsersController {
       });
 
       return this.jsendSerializer
-        .successResponse({ ...include(createdUser, ['login', 'email']), token })
+        .successResponse({
+          ...include(createdUser, includeData),
+          token,
+        })
         .get();
     }
 
@@ -44,7 +59,7 @@ export class UsersController {
 
   @Post('/login')
   @HttpCode(HttpStatus.OK)
-  public async login(@Data(fill) data: LoginUserDTO) {
+  public async login(@Data(loginData) data: LoginUserDTO) {
     const user = await this.usersService.getByLogin(data.login);
     if (user && (await bcrypt.compare(data.password, user.password))) {
       const token = this.jwtService.sign({
@@ -53,12 +68,59 @@ export class UsersController {
       });
 
       return this.jsendSerializer
-        .successResponse({ ...include(user, ['login', 'email']), token })
+        .successResponse({
+          ...include(user, includeData),
+          token,
+        })
         .get();
     }
 
     throw new HttpException(
       'Login or password are invalid',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
+  @Post('/auth')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  public async auth(@RequestContext() ctx) {
+    return this.jsendSerializer
+      .successResponse({ ...include(ctx.user, includeData) })
+      .get();
+  }
+
+  @Post('/profile')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AuthGuard)
+  public async createProfile(
+    @RequestContext() ctx,
+    @Data(profileData) data: CreateProfileDTO,
+  ) {
+    if (!data.name || !data.group) {
+      throw new HttpException(
+        'You must provide name and group fields',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (!ctx.user.name) {
+      const user = await this.usersService.createProfile(ctx.user.login, data);
+
+      if (!user) {
+        throw new HttpException(
+          'Cannot find your account',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return this.jsendSerializer
+        .successResponse({ ...include(user, includeData) })
+        .get();
+    }
+
+    throw new HttpException(
+      'Your profile is already created',
       HttpStatus.BAD_REQUEST,
     );
   }

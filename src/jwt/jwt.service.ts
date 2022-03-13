@@ -6,4 +6,8 @@ export class JwtService {
   public sign(obj: any) {
     return jwt.sign(obj, 'rubtid');
   }
+
+  public unsign(token: string) {
+    return jwt.decode(token);
+  }
 }

@@ -21,6 +21,9 @@ export class User {
 
   @Prop({ length: '11' })
   phoneNumber: string;
+
+  @Prop({ maxlength: 32 })
+  group: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
