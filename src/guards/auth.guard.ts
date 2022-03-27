@@ -23,6 +23,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    throw new HttpException('You must be authorized for that', 403);
+    throw new HttpException('Вы должны быть авторизированы для этого', 403);
   }
 }

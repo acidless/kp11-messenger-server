@@ -8,6 +8,10 @@ export const Data = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<Request>();
     const modifiedData = {};
 
+    if (!data) {
+      return request.body;
+    }
+
     Object.keys(request.body).forEach((key) => {
       if (data.includes(key)) {
         modifiedData[key] = request.body[key];

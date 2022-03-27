@@ -15,4 +15,11 @@ export interface CreateProfileDTO {
   surname: string;
   phoneNumber: string;
   group: string;
+  avatar: string;
+}
+
+export interface UpdateProfileDTO extends CreateProfileDTO {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
 }

@@ -24,6 +24,9 @@ export class User {
 
   @Prop({ maxlength: 32 })
   group: string;
+
+  @Prop()
+  avatar: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

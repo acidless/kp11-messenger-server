@@ -3,8 +3,14 @@ const jwt = require('jsonwebtoken');
 
 @Injectable()
 export class JwtService {
-  public sign(obj: any) {
-    return jwt.sign(obj, 'rubtid');
+  public sign(login: string, password: string) {
+    return jwt.sign(
+      {
+        login,
+        password,
+      },
+      'rubtid',
+    );
   }
 
   public unsign(token: string) {
