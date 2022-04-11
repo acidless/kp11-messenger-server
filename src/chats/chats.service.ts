@@ -2,10 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Chat, ChatDocument } from '../../schemas/chat.schema';
-import { exclude, IsObjectId } from '../../utils/object';
-import * as fs from 'fs';
-import * as path from 'path';
-import { ChatUpdateDTO } from './ChatDTO';
+import { IsObjectId } from '../../utils/object';
 
 @Injectable()
 export class ChatsService {
@@ -30,7 +27,7 @@ export class ChatsService {
       };
     }
 
-    const query = this.model.find(findObject).select('name _id avatar');
+    const query = this.model.find(findObject).select('name _id avatar creator');
     const result: any = {};
 
     const data = await query
@@ -39,12 +36,13 @@ export class ChatsService {
       .limit(PER_PAGE)
       .populate({
         path: 'lastMessage',
-        select: 'content sendAt',
+        select: 'content sendAt sender',
       })
       .sort('-updatedAt name');
 
     result.count = await query.count();
     result.chats = data;
+    result.isLastPage = data.length === 0;
 
     return result;
   }

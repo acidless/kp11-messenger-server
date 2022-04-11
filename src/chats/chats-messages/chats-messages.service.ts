@@ -12,12 +12,7 @@ export class ChatsMessagesService {
     private chatsService: ChatsService,
   ) {}
 
-  public async sendMessage(
-    senderId: string,
-    chatId: string,
-    content: string,
-    isSystem = false,
-  ) {
+  public async sendMessage(senderId: string, chatId: string, content: string, isSystem = false) {
     IsObjectId(chatId);
 
     const chat = await this.chatsService.getChat(chatId);
@@ -45,12 +40,14 @@ export class ChatsMessagesService {
     const chat = await this.chatsService.getChat(chatId);
     this.chatsService.isUserInChat(chat, senderId);
 
-    return this.model
+    const messages = await this.model
       .find({ chat: chatId })
       .sort('-sendAt')
       .skip(PER_PAGE * page)
       .limit(PER_PAGE)
       .populate('sender', this.chatsService.populateArray)
       .select('-__v');
+
+    return { messages, isLastPage: messages.length === 0 };
   }
 }

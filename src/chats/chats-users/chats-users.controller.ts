@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { RequestContext } from '../../../decorators/request-context.decorator';
 import { AuthGuard } from '../../guards/auth.guard';
 import { ChatsUsersService } from './chats-users.service';
@@ -15,37 +7,31 @@ import { Data } from '../../../decorators/data.decorator';
 
 @Controller('chats/:id/users')
 export class ChatsUsersController {
-  public constructor(
-    private jsendSerializer: JSendSerializer,
-    private chatsUsersService: ChatsUsersService,
-  ) {}
+  public constructor(private jsendSerializer: JSendSerializer, private chatsUsersService: ChatsUsersService) {}
 
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
-  public async addUsers(
-    @RequestContext() ctx,
-    @Param() params,
-    @Data(['users']) data,
-  ) {
-    const chat = await this.chatsUsersService.addUsers(
-      params.id,
-      ctx.user._id,
-      data.users,
-    );
+  public async addUsers(@RequestContext() ctx, @Param() params, @Data(['users']) data) {
+    const chat = await this.chatsUsersService.addUsers(params.id, ctx.user._id, data.users);
 
     return this.jsendSerializer.successResponse({ ...chat }).get();
+  }
+
+  @Delete('/')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  public async leaveFromChat(@RequestContext() ctx, @Param() params) {
+    const chat = await this.chatsUsersService.leave(params.id, ctx.user._id);
+
+    return this.jsendSerializer.successResponse(chat ? { ...chat } : undefined).get();
   }
 
   @Delete('/:userId')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   public async removeUser(@RequestContext() ctx, @Param() params) {
-    const chat = await this.chatsUsersService.removeUser(
-      params.id,
-      ctx.user._id,
-      params.userId,
-    );
+    const chat = await this.chatsUsersService.removeUser(params.id, ctx.user._id, params.userId);
 
     return this.jsendSerializer.successResponse({ ...chat }).get();
   }

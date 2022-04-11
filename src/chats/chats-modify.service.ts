@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Chat, ChatDocument } from '../../schemas/chat.schema';
@@ -29,10 +29,14 @@ export class ChatsModifyService extends Subject {
     this.notify('chatCreate', chatId, senderId);
   }
 
-  public async createChat(name: string, userId: string) {
+  public async createChat(name: string, userId: string, users: Array<string> = []) {
+    if (users.find((user) => user == userId)) {
+      throw new BadRequestException('Вы не можете создать чат с самим собой');
+    }
+
     const chat = await this.model.create({
       name,
-      users: [userId],
+      users: [userId, ...users],
       creator: userId,
     });
 

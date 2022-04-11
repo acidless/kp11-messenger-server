@@ -64,10 +64,10 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   public async getUsers(@RequestContext() ctx, @Query() query) {
-    let users = await this.usersService.getByName(query['q'], query['p'] || 0);
-    users = users.filter((user) => user._id.toString() != ctx.user._id);
+    const result = await this.usersService.getByName(query['q'], query['p'] || 0);
+    result.users = result.users.filter((user) => user._id.toString() != ctx.user._id);
 
-    return this.jsendSerializer.successResponse({ users }).get();
+    return this.jsendSerializer.successResponse({ ...result }).get();
   }
 
   @Post('/profile')

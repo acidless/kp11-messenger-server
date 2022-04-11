@@ -21,9 +21,7 @@ export class WSService {
     const chat = await this.chatsService.getChat(message.chat.toString());
 
     this.clients.forEach((cl) => {
-      if (
-        chat.users.find((user) => (user as any)._id.toString() === cl.userId)
-      ) {
+      if (chat.users.find((user) => (user as any)._id.toString() === cl.userId)) {
         this.server.to(cl.socketId).emit('message', message);
       }
     });
@@ -34,9 +32,7 @@ export class WSService {
     const sender = this.clients.find((cl2) => cl2.socketId === clientId);
 
     this.clients.forEach((cl) => {
-      if (
-        chat.users.find((user) => (user as any)._id.toString() === cl.userId)
-      ) {
+      if (chat.users.find((user) => (user as any)._id.toString() === cl.userId)) {
         this.server.to(cl.socketId).emit('typing', {
           ...message,
           userId: sender?.userId,
@@ -47,7 +43,7 @@ export class WSService {
 
   public registerClient(clientId: string, userId: string) {
     const newClient = { userId, socketId: clientId };
-    const findIndex = this.clients.findIndex((cl) => cl.userId === userId);
+    const findIndex = this.clients.findIndex((cl) => cl.socketId === clientId || cl.userId === userId);
 
     if (findIndex !== -1) {
       this.clients[findIndex] = newClient;

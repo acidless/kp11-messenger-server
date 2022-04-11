@@ -17,6 +17,6 @@ export default class ChatsEvents implements Subscriber {
     }
 
     const message = await this.chatMessagesService.sendMessage(senderId.toString(), chatId, content, true);
-    await this.wsService.sendMessage(message);
+    await this.wsService.sendMessage({ ...message, action: 'changeChat' });
   }
 }

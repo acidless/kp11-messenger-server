@@ -13,6 +13,7 @@ import { WSService } from './chats/WS.service';
 import { UsersModule } from './users/users.module';
 import { ChatsMessagesModule } from './chats/chats-messages/chats-messages.module';
 import { ChatsUsersModule } from './chats/chats-users/chats-users.module';
+import { MessagesModule } from './messages/messages.module';
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
@@ -29,6 +30,7 @@ const models = MongooseModule.forFeature([
     UsersModule,
     ChatsMessagesModule,
     ChatsUsersModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService, JSendSerializer, JwtService, AppGateway, WSService],

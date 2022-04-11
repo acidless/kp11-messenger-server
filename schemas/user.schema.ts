@@ -13,10 +13,10 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ maxlength: '64' })
+  @Prop({ maxlength: '32' })
   name: string;
 
-  @Prop({ maxlength: '128' })
+  @Prop({ maxlength: '64' })
   surname: string;
 
   @Prop({ length: '11' })

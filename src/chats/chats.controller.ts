@@ -21,7 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import FileOptions from '../../utils/image';
 import { ChatsModifyService } from './chats-modify.service';
 
-const createData = ['name'];
+const createData = ['name', 'users'];
 const updateData = ['name', 'avatar'];
 
 @Controller('chats')
@@ -35,14 +35,8 @@ export class ChatsController {
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
-  public async createChat(
-    @RequestContext() ctx,
-    @Data(createData) data: ChatDTO,
-  ) {
-    const chat = await this.chatsModifyService.createChat(
-      data.name,
-      ctx.user._id,
-    );
+  public async createChat(@RequestContext() ctx, @Data(createData) data: ChatDTO) {
+    const chat = await this.chatsModifyService.createChat(data.name, ctx.user._id, data.users);
 
     return this.jsendSerializer.successResponse({ ...chat }).get();
   }
@@ -51,13 +45,9 @@ export class ChatsController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   public async getChats(@RequestContext() ctx, @Query() query) {
-    let { count, chats } = await this.chatsService.getChats(
-      query['q'],
-      query['p'] || 0,
-      ctx.user._id,
-    );
+    const result = await this.chatsService.getChats(query['q'], query['p'] || 0, ctx.user._id);
 
-    return this.jsendSerializer.successResponse({ chats, count }).get();
+    return this.jsendSerializer.successResponse({ ...result }).get();
   }
 
   @Get(':id')
@@ -85,11 +75,7 @@ export class ChatsController {
       data.avatar = file.path;
     }
 
-    const chat = await this.chatsModifyService.updateChat(
-      id,
-      ctx.user._id,
-      data,
-    );
+    const chat = await this.chatsModifyService.updateChat(id, ctx.user._id, data);
 
     return this.jsendSerializer.successResponse({ ...chat.toObject() }).get();
   }
