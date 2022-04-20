@@ -57,11 +57,16 @@ export class UsersService {
       };
     }
 
-    return this.model
+    const users = await this.model
       .find(findFilters)
       .skip(PER_PAGE * page)
       .limit(PER_PAGE)
       .select('_id name surname avatar');
+
+    return {
+      users,
+      isLastPage: users.length === 0,
+    };
   }
 
   public async getById(id: string) {

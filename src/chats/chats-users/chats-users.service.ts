@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ChatsService } from '../chats.service';
 import { exclude, IsObjectId } from '../../../utils/object';
 import { isArray } from 'util';
@@ -11,10 +7,7 @@ import ChatsUsersEvents from './chats-users.events';
 
 @Injectable()
 export class ChatsUsersService extends Subject {
-  public constructor(
-    private chatsService: ChatsService,
-    private chatsUsersEvents: ChatsUsersEvents,
-  ) {
+  public constructor(private chatsService: ChatsService, private chatsUsersEvents: ChatsUsersEvents) {
     super();
     this.subscribe(this.chatsUsersEvents);
   }
@@ -27,11 +20,15 @@ export class ChatsUsersService extends Subject {
     await this.notify('userRemove', chatId, senderId, userId);
   }
 
-  public async addUsers(
-    chatId: string,
-    senderId: string,
-    users: Array<string>,
-  ) {
+  public async onUserLeave(chatId: string, senderId: string) {
+    await this.notify('userLeave', chatId, senderId);
+  }
+
+  public async onChatRemove(chatId: string, senderId: string) {
+    await this.notify('chatRemove', chatId, senderId);
+  }
+
+  public async addUsers(chatId: string, senderId: string, users: Array<string>) {
     const MAX_MEMBERS_COUNT = 100;
 
     if (!users || !isArray(users)) {
@@ -53,9 +50,7 @@ export class ChatsUsersService extends Subject {
 
         this.onUserAdd(chatId, senderId, userId);
       } else {
-        throw new BadRequestException(
-          `Макисмальное число участников в чате - ${MAX_MEMBERS_COUNT}`,
-        );
+        throw new BadRequestException(`Макисмальное число участников в чате - ${MAX_MEMBERS_COUNT}`);
       }
     }
 
@@ -89,6 +84,35 @@ export class ChatsUsersService extends Subject {
     chat.users = chat.users.filter((elem, i) => i !== index);
     await this.onUserRemove(chatId, senderId, userId);
     await chat.save();
+
+    return exclude(chat.toObject(), ['__v']);
+  }
+
+  public async leave(chatId: string, senderId: string) {
+    const chat = await this.chatsService.getChat(chatId);
+
+    if (chat.creator.toString() === senderId.toString()) {
+      await this.onChatRemove(chatId, senderId);
+      chat.remove();
+      return undefined;
+    }
+
+    const index = chat.users.findIndex((elem) => {
+      return (elem as any)._id.toString() === senderId.toString();
+    });
+
+    if (index === -1) {
+      throw new NotFoundException('Этот пользователь не состоит в чате');
+    }
+
+    chat.users = chat.users.filter((elem, i) => i !== index);
+    await this.onUserLeave(chatId, senderId);
+    await chat.save();
+
+    if (!chat.users.length) {
+      chat.remove();
+      return undefined;
+    }
 
     return exclude(chat.toObject(), ['__v']);
   }
