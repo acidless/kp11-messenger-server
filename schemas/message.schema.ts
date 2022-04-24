@@ -27,6 +27,9 @@ export class Message {
 
   @Prop({ type: Boolean })
   public isSystem: boolean;
+
+  @Prop({ type: [String] })
+  public attachments: Array<string>;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

@@ -15,7 +15,7 @@ export class WSService {
 
   public server: Server;
 
-  private clients: Array<{ userId: string; socketId: string }> = [];
+  public clients: Array<{ userId: string; socketId: string }> = [];
 
   public async sendMessage(message: Message) {
     const chat = await this.chatsService.getChat(message.chat.toString());

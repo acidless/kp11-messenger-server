@@ -19,6 +19,14 @@ const imageFileFilter = (req, file, callback) => {
   callback(null, true);
 };
 
+export const AllFilesOptions = {
+  storage: diskStorage({
+    destination: './uploads/messages',
+    filename: editFileName,
+  }),
+  limits: { fileSize: 20000000 },
+};
+
 const FileOptions = {
   storage: diskStorage({
     destination: './uploads',

@@ -1,10 +1,23 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+  Body,
+} from '@nestjs/common';
 import { AuthGuard } from '../../guards/auth.guard';
 import { RequestContext } from '../../../decorators/request-context.decorator';
-import { Data } from '../../../decorators/data.decorator';
 import { CreateMessageDTO } from './MessageDTO';
 import JSendSerializer from 'r-jsend';
 import { ChatsMessagesService } from './chats-messages.service';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AllFilesOptions } from '../../../utils/image';
 
 const messageData = ['content'];
 
@@ -15,8 +28,14 @@ export class ChatsMessagesController {
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
-  public async sendMessage(@RequestContext() ctx, @Param('id') chatId, @Data(messageData) data: CreateMessageDTO) {
-    const message = await this.chatMessagesService.sendMessage(ctx.user._id, chatId, data.content);
+  @UseInterceptors(AnyFilesInterceptor(AllFilesOptions))
+  public async sendMessage(
+    @RequestContext() ctx,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Param('id') chatId,
+    @Body() data: CreateMessageDTO,
+  ) {
+    const message = await this.chatMessagesService.sendMessage(ctx.user._id, chatId, data.content, false, files);
 
     return this.jsendSerializer.successResponse({ ...message }).get();
   }

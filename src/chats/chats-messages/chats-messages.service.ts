@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from '../../../schemas/message.schema';
@@ -12,8 +12,18 @@ export class ChatsMessagesService {
     private chatsService: ChatsService,
   ) {}
 
-  public async sendMessage(senderId: string, chatId: string, content: string, isSystem = false) {
+  public async sendMessage(
+    senderId: string,
+    chatId: string,
+    content: string,
+    isSystem = false,
+    files: Array<Express.Multer.File> = [],
+  ) {
     IsObjectId(chatId);
+
+    const filePathes = files.map((file) => {
+      return file.path;
+    });
 
     const chat = await this.chatsService.getChat(chatId);
     this.chatsService.isUserInChat(chat, senderId);
@@ -24,6 +34,7 @@ export class ChatsMessagesService {
       content,
       isSystem: isSystem ? true : undefined,
       sendAt: Date.now(),
+      attachments: filePathes,
     });
 
     chat.lastMessage = message._id as any;

@@ -1,17 +1,11 @@
-import {
-  OnGatewayInit,
-  SubscribeMessage,
-  WebSocketGateway,
-} from '@nestjs/websockets';
+import { OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { MessageDocument } from '../schemas/message.schema';
 import { TypingDTO, WSService } from './chats/WS.service';
 
 @WebSocketGateway(1488)
-export class AppGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   public constructor(private wsService: WSService) {}
 
   afterInit(server: any) {
@@ -20,6 +14,11 @@ export class AppGateway
 
   @SubscribeMessage('message')
   async handleMessage(client: Socket, message: MessageDocument) {
+    await this.handleTyping(client, {
+      chatId: message.chat as unknown as string,
+      isTyping: false,
+      userId: this.wsService.clients.find((cl2) => cl2.socketId === client.id).userId,
+    });
     await this.wsService.sendMessage(message);
   }
 
