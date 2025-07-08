@@ -2,8 +2,8 @@
 
 Этот репозиторий содержит backend-часть приложения KP11 Messenger — безопасного и лёгкого мессенджера для студентов и преподавателей. Сервер обеспечивает API, хранение сообщений, регистрацию пользователей и маршрутизацию чатов.
 
-![Angular](https://img.shields.io/badge/-NestJs-ea2845?style=for-the-badge&logo=nestjs&logoColor=white)
-![Angular](https://img.shields.io/badge/-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=white)
+![NestJS](https://img.shields.io/badge/-NestJs-ea2845?style=for-the-badge&logo=nestjs&logoColor=white)
+![MongoDB](https://img.shields.io/badge/-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=white)
 
 ## 🚀 Возможности
 
